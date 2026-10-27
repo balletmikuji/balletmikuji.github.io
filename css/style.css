@@ -1,0 +1,265 @@
+/* =========================================================
+ * 色・フォントはここ（:root）をまとめて変更
+ * ======================================================= */
+:root {
+  --bg: #fdf6f0;
+  --text: #333;
+  --accent: #c0392b;
+  --sub: #888;
+  --card: #fff;
+  --line: #e5d8cc;
+  --radius: 12px;
+  --font: "Hiragino Mincho ProN", "Yu Mincho", serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+#app {
+  max-width: 480px;
+  min-height: 100%;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ---------- 画面共通 ---------- */
+.screen {
+  display: none;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 16px;
+  flex-direction: column;
+  align-items: center;
+}
+.screen.is-active { display: flex; }
+
+.screen-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.screen-title { margin: 8px 0 16px; }
+
+.btn {
+  min-width: 200px;
+  padding: 14px 24px;
+  font: inherit;
+  font-size: 1.1rem;
+  border: 2px solid var(--accent);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--accent);
+  cursor: pointer;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-back {
+  border: none; background: none; font: inherit;
+  color: var(--sub); padding: 8px 0; cursor: pointer;
+}
+.btn-debug {
+  margin-top: 24px; font-size: .8rem; color: var(--sub);
+  background: none; border: 1px dashed var(--sub); padding: 6px 10px;
+}
+
+.menu { display: flex; flex-direction: column; gap: 16px; margin-top: 24px; }
+.guide, .status, .note { color: var(--sub); text-align: center; }
+
+/* プレースホルダー（デザイン差し替えまでの仮表示） */
+.placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px dashed var(--sub); border-radius: 8px;
+  background: #fff8; color: var(--sub);
+}
+
+/* ---------- タイトル ---------- */
+#screen-title { justify-content: center; }
+.app-title { font-size: 2.4rem; letter-spacing: .1em; margin: 0 0 8px; }
+
+/* ---------- おみくじ（箱・札） ---------- */
+.box-stage {
+  /* ★ 箱の幅：画面幅の75%（ただし最大320px）。大きくしたいときは 75vw → 85vw など */
+  --box-w: min(85vw, 360px);
+  /* ★ 箱の高さ＝幅×1.5（画像の「高さ÷幅」に合わせて 1.5 を変更） */
+  --box-h: calc(var(--box-w) * 1.5);
+
+  /* ★ 箱の中に入っている札（白い短冊）の大きさ */
+  --stick-w: calc(var(--box-w) * 0.22);
+  --stick-h: calc(var(--box-h) * 0.7);
+
+  position: relative;
+  width: 100%;
+  height: calc(var(--box-h) * 1.1);
+  margin-top: 16px;
+}
+.omikuji-box {
+  position: absolute;
+  top: 0;
+  left: calc(50% - var(--box-w) / 2); /* 中央寄せ */
+  width: var(--box-w);
+  height: var(--box-h);
+  touch-action: none;             /* スワイプでページがスクロールしないように */
+  cursor: grab;
+  z-index: 2;
+}
+.omikuji-box img, .omikuji-stick img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+
+.omikuji-box.is-shaking { animation: shake var(--shake-ms, .6s) ease-in-out; }
+@keyframes shake {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-12deg); }
+  40% { transform: rotate(10deg); }
+  60% { transform: rotate(-8deg); }
+  80% { transform: rotate(6deg); }
+}
+
+/* おみくじ画面の上部バー（もどる＋案内文）。箱はこの下にもぐり込む */
+.draw-topbar {
+  position: relative;
+  z-index: 5;                 /* 箱（z-index: 2）より手前 */
+  width: calc(100% + 32px);   /* 画面の左右の余白まで覆う */
+  margin: -16px -16px 0;      /* 画面の上の余白まで覆う */
+  padding: 16px 16px 12px;    /* ★ バーの余白（下の数値でバーの高さを調整） */
+  background: var(--bg);      /* 背景と同じ色で塗りつぶして箱を隠す */
+}
+.draw-topbar .guide { margin: 8px 0 0; }
+
+/* 上スワイプ：一瞬沈んでから、勢いよく上へ＆拡大。最後に一気にフェードアウト */
+.omikuji-box.is-leaving {
+  animation: box-leave var(--box-leave-ms, .5s) forwards;
+  transform-origin: center bottom; /* 下端を基準に拡大（札にかぶりにくくする） */
+  pointer-events: none;
+}
+@keyframes box-leave {
+  0% {
+    transform: none; opacity: 1;
+    animation-timing-function: ease-out;
+  }
+  80% { opacity: 1; } /* ★ 透明になり始めるタイミング（全体の8割が過ぎてから） */
+  100% {
+    transform: translateY(-80%) scale(1.6); /* ★ 上への移動量・最終的な拡大率 */
+    opacity: 0;
+  }
+}
+
+/* 札：箱の中央に固定された白い短冊。箱が消えると現れ、そのまま結果の札へ開く */
+.omikuji-stick {
+  position: absolute;
+  top: calc((var(--box-h) - var(--stick-h)) / 2);
+  left: calc(50% - var(--stick-w) / 2);
+  width: var(--stick-w);
+  height: var(--stick-h);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 0 4px 16px #0001;
+  z-index: 1;
+
+  /* ★ クローズアップの設定 */
+  --zoom-from: 0.2;    /* 最初の大きさ（0.2＝本来の20%） */
+  --zoom-ms: 300ms;    /* 大きくなるのにかける時間 */
+  --zoom-delay: 360ms; /* 上スワイプしてから札が現れ始めるまで（箱が透け始める頃） */
+
+  opacity: 0;
+  transform: scale(var(--zoom-from));
+  transition:
+    opacity .1s ease-out var(--zoom-delay),
+    /* ★ 勢いよく飛び出し、少しだけ行き過ぎて止まる */
+    transform var(--zoom-ms) cubic-bezier(.3, 1.4, .5, 1) var(--zoom-delay);
+}
+.omikuji-stick .placeholder { display: none; }
+.omikuji-stick.is-revealed { opacity: 1; transform: none; }
+
+/* ---------- 結果の札 ---------- */
+.slip {
+  /* ★ 札のサイズ。高さは豆知識の量に合わせて「最小〜最大」の間で自動調整
+       最大を超える長文は、豆知識部分だけ札の中でスクロール */
+  --slip-max-w: 320px; /* 最大の幅（画面が狭いときは画面幅に合わせて縮む） */
+  --slip-min-h: 240px; /* 最小の高さ（＝変更前の結果画面のサイズ感） */
+  --slip-max-h: 70dvh; /* 最大の高さ（70dvh＝画面の高さの70%） */
+
+  width: 100%;
+  max-width: var(--slip-max-w);
+  min-height: var(--slip-min-h);
+  max-height: var(--slip-max-h);
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px #0001;
+  overflow: hidden;
+}
+/* 札が開いている間は文字を隠し、開き終わったらふわっと表示 */
+.slip > *, #screen-result > :not(.slip) { transition: opacity .3s; }
+.slip.is-unfolding > *,
+#screen-result.is-unfolding > :not(.slip) { opacity: 0; transition: none; }
+
+.slip-top { flex-shrink: 0; padding: 24px 16px; text-align: center; border-bottom: 1px dashed var(--line); }
+.slip-fortune { font-size: 3rem; font-weight: bold; color: var(--accent); }
+.slip-message { margin: 8px 0 0; }
+.slip-message:empty { display: none; }
+/* 豆知識の欄：日本語の縦書き（右から左へ読む） */
+.slip-bottom {
+  --trivia-h: clamp(220px, 40dvh, 360px); /* ★ 縦書き欄の高さ（＝1行の長さ） */
+  writing-mode: vertical-rl;  /* 縦書き・右から左 */
+  flex: none;
+  height: var(--trivia-h);
+  overflow-x: auto;           /* 長文は横スクロール（右端から始まる） */
+  overflow-y: hidden;
+  padding: 20px 16px;
+}
+.slip-trivia-label { font-size: .85rem; color: var(--sub); margin: 0; }
+.slip-trivia-title { font-size: 1.15rem; margin: 0 0 0 12px; } /* 左側（次の行との間）に余白 */
+.slip-trivia-body  { line-height: 1.8; margin: 0; }
+
+/* 運勢ごとに札のデザインを変える場合の例
+.slip[data-fortune="daikichi"] { background: #fffbe6; }
+*/
+
+/* ---------- ずかん ---------- */
+.zukan-progress { color: var(--sub); }
+.zukan-grid {
+  list-style: none; padding: 0; margin: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.zukan-item {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px;
+  min-height: 88px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.zukan-item.is-collected { cursor: pointer; }
+.zukan-item.is-locked { background: #eee; color: #aaa; }
+.zukan-no { font-size: .75rem; color: var(--sub); }
+.zukan-name { font-size: .95rem; line-height: 1.4; }
+
+/* ---------- モーダル ---------- */
+.modal[hidden] { display: none; }
+.modal { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.modal-backdrop { position: absolute; inset: 0; background: #0006; }
+.modal-body {
+  position: relative;
+  width: 100%; max-width: 400px; max-height: 80vh; overflow: auto;
+  background: var(--card); border-radius: var(--radius);
+  padding: 24px; text-align: center;
+}
+.modal-no { color: var(--sub); font-size: .85rem; }
+.modal-title { margin: 8px 0 12px; }
+.modal-text { text-align: left; line-height: 1.8; }
+.modal-meta { font-size: .8rem; color: var(--sub); }

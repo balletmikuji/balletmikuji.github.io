@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>バレエみくじ</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- ===================== タイトル画面 ===================== -->
+    <section id="screen-title" class="screen is-active">
+      <!-- [DESIGN] タイトルロゴ・背景はここを差し替え -->
+      <h1 class="app-title">バレエみくじ</h1>
+      <p id="title-status" class="status"></p>
+      <div class="menu">
+        <button id="btn-go-draw" class="btn btn-primary">うらなう</button>
+        <button id="btn-go-zukan" class="btn">ずかん</button>
+      </div>
+      <button id="btn-debug-reset" class="btn-debug" hidden>[DEBUG] 今日の記録をリセット</button>
+    </section>
+
+    <!-- ===================== おみくじ画面 ===================== -->
+    <section id="screen-draw" class="screen">
+      <!-- 上部バー：箱はこの下にもぐり込むように消える -->
+      <div class="draw-topbar">
+        <header class="screen-header">
+          <button class="btn-back" data-go="title">← もどる</button>
+        </header>
+        <p id="draw-guide" class="guide"></p>
+      </div>
+
+      <div class="box-stage">
+        <!-- 箱から出てくる札（くじ棒） -->
+        <div id="omikuji-stick" class="omikuji-stick">
+          <!-- [DESIGN] 札・くじ棒の見た目（config.js の ASSETS.stickImage でも差し替え可） -->
+          <div class="placeholder stick-placeholder">札</div>
+        </div>
+
+        <!-- おみくじの箱：タップで振る / 下スワイプで札を出す -->
+        <div id="omikuji-box" class="omikuji-box" role="button" aria-label="おみくじの箱">
+          <!-- [DESIGN] 箱の見た目（config.js の ASSETS.boxImage でも差し替え可） -->
+          <div class="placeholder box-placeholder">おみくじ箱</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 結果画面 ===================== -->
+    <section id="screen-result" class="screen">
+      <header class="screen-header">
+        <button class="btn-back" data-go="title">← タイトルへ</button>
+      </header>
+
+      <p id="result-caption" class="guide"></p>
+
+      <!-- [DESIGN] おみくじの札（結果） -->
+      <article id="slip" class="slip">
+        <div class="slip-top">
+          <div id="slip-fortune" class="slip-fortune"></div>
+          <p id="slip-message" class="slip-message"></p>
+        </div>
+        <div class="slip-bottom">
+          <div class="slip-trivia-label">バレエ豆知識</div>
+          <h2 id="slip-trivia-title" class="slip-trivia-title"></h2>
+          <p id="slip-trivia-body" class="slip-trivia-body"></p>
+        </div>
+      </article>
+
+      <p id="result-note" class="note"></p>
+
+      <div class="menu">
+        <button class="btn" data-go="zukan">ずかんを見る</button>
+      </div>
+    </section>
+
+    <!-- ===================== ずかん画面 ===================== -->
+    <section id="screen-zukan" class="screen">
+      <header class="screen-header">
+        <button class="btn-back" data-go="title">← もどる</button>
+        <span id="zukan-progress" class="zukan-progress"></span>
+      </header>
+      <h2 class="screen-title">ずかん</h2>
+      <ul id="zukan-list" class="zukan-grid"></ul>
+    </section>
+
+    <!-- ===================== ずかん詳細モーダル ===================== -->
+    <div id="zukan-modal" class="modal" hidden>
+      <div class="modal-backdrop" data-close></div>
+      <div class="modal-body">
+        <div id="modal-no" class="modal-no"></div>
+        <h3 id="modal-title" class="modal-title"></h3>
+        <p id="modal-text" class="modal-text"></p>
+        <p id="modal-meta" class="modal-meta"></p>
+        <button class="btn" data-close>とじる</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 読み込み順：データ → 設定 → 本体 -->
+  <script src="data/fortunes.js"></script>
+  <script src="data/trivia.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
